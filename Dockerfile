@@ -6,7 +6,7 @@ WORKDIR /app
 RUN apk add --no-cache libc6-compat netcat-openbsd
 
 # Copy package files first for caching
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json* tsconfig.json ./
 RUN npm ci --only=production
 
 # Stage 2: Builder
