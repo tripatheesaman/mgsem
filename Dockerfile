@@ -40,6 +40,9 @@ COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/scripts ./scripts
 
+# Make start.sh executable
+RUN chmod +x ./scripts/start.sh
+
 # Uploads Directory
 RUN mkdir -p public/uploads \
     && chown -R nextjs:nodejs public/uploads \
