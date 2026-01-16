@@ -40,6 +40,11 @@ COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/scripts ./scripts
 
+#Make sure that the runtime directories are writable
+RUN mkdir -p .next/cache \
+    && chown -R nextjs:nodejs .next public logs \
+    && chmod -R 755 .next public logs
+
 # Make start.sh executable
 RUN chmod +x ./scripts/start.sh
 
