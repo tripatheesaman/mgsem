@@ -1,19 +1,27 @@
 import type { NextConfig } from "next";
 import path from "path";
 
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "/mgsem";
+
 const nextConfig: NextConfig = {
   output: "standalone",
   compress: true,
   poweredByHeader: false,
   generateEtags: false,
   reactStrictMode: true,
+  basePath: BASE_PATH,
+  assetPrefix: BASE_PATH,
+
+  images: {
+    unoptimized: true, 
+  },
 
   // Configure static file serving for uploads
   async rewrites() {
     return [
       {
-        source: "/uploads/:path*",
-        destination: "/api/uploads/:path*",
+        source: `${BASE_PATH}/uploads/:path*`,
+        destination: `${BASE_PATH}/api/uploads/:path*`,
       },
     ];
   },
