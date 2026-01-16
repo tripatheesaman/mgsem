@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   basePath: BASE_PATH,
   assetPrefix: BASE_PATH,
-
+  trailingSlash: true,
   images: {
     unoptimized: true, 
   },
