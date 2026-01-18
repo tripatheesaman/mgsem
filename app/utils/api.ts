@@ -1,7 +1,13 @@
 import { ApiResponse } from '../types';
 
-// Use same-origin API by default to avoid port/env mismatches
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+if (!API_BASE_URL) {
+  throw new Error(
+    'NEXT_PUBLIC_API_BASE_URL is not defined. ' +
+    'It must be set when using Next.js basePath.'
+  );
+}
 
 class ApiClient {
   private baseUrl: string;
@@ -41,18 +47,50 @@ class ApiClient {
         ...options,
         headers,
       });
+      if (response.redirected) {
+        console.warn('API request was redirected:', {
+          url,
+          redirected: response.url,
+          status: response.status
+        });
+      }
 
-      // Handle non-JSON responses (e.g., 404 HTML pages)
-      const contentType = response.headers.get('content-type');
       let data;
-      if (contentType && contentType.includes('application/json')) {
-        data = await response.json();
-      } else {
-        // Non-JSON response - likely an error page
+      const contentType = response.headers.get('content-type') || '';
+      
+      try {
         const text = await response.text();
+        
+        if (text.trim()) {
+          try {
+            data = JSON.parse(text);
+          } catch (parseError) {
+            console.error('Failed to parse JSON response:', {
+              status: response.status,
+              statusText: response.statusText,
+              contentType,
+              url,
+              responsePreview: text.substring(0, 500)
+            });
+            
+            return {
+              success: false,
+              error: response.ok 
+                ? `Invalid response: server returned non-JSON content (${contentType})`
+                : `Request failed: ${response.status} ${response.statusText}`,
+            };
+          }
+        } else {
+          // Empty response
+          return {
+            success: false,
+            error: 'Empty response from server',
+          };
+        }
+      } catch (error) {
         return {
           success: false,
-          error: `Request failed: ${response.status} ${response.statusText}`,
+          error: error instanceof Error ? error.message : 'Unknown error reading response',
         };
       }
       
