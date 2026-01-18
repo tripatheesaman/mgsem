@@ -42,13 +42,23 @@ class ApiClient {
         headers,
       });
 
-      const data = await response.json();
+      // Handle non-JSON responses (e.g., 404 HTML pages)
+      const contentType = response.headers.get('content-type');
+      let data;
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        // Non-JSON response - likely an error page
+        const text = await response.text();
+        return {
+          success: false,
+          error: `Request failed: ${response.status} ${response.statusText}`,
+        };
+      }
       
       if (!response.ok && response.status === 401) {
         // Check if token exists but is invalid
         const token = this.getToken();
-        // Only log if we have debugging enabled or if it's not a notification endpoint
-        // (notifications failing is expected if user is not logged in)
         if (process.env.NODE_ENV === 'development' && !endpoint.includes('/notifications')) {
           console.warn('Authentication error:', {
             hasToken: !!token,
