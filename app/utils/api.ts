@@ -73,6 +73,33 @@ class ApiClient {
       body: data ? JSON.stringify(data) : undefined,
     });
   }
+
+  put<T>(endpoint: string, data?: unknown) {
+    return this.request<T>(endpoint, {
+      method: 'PUT',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  delete<T>(endpoint: string) {
+    return this.request<T>(endpoint, { method: 'DELETE' });
+  }
+
+  async getBlob(endpoint: string): Promise<{ ok: boolean; blob?: Blob; filename?: string; status: number; }> {
+    const url = `${this.baseUrl}${endpoint}`;
+    const headers: Record<string, string> = {};
+    const token = this.getToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const resp = await fetch(url, { method: 'GET', headers });
+    const cd = resp.headers.get('Content-Disposition') || '';
+    const match = /filename\s*=\s*"?([^";]+)"?/i.exec(cd || '');
+    const filename = match ? decodeURIComponent(match[1]) : undefined;
+    if (!resp.ok) {
+      return { ok: false, status: resp.status };
+    }
+    const blob = await resp.blob();
+    return { ok: true, blob, filename, status: resp.status };
+  }
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
