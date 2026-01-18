@@ -2,7 +2,7 @@ import { ApiResponse } from '../types';
 
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
-if (!API_BASE_URL) {
+if (typeof window !== 'undefined' && !API_BASE_URL) {
   throw new Error(
     'NEXT_PUBLIC_API_BASE_URL is not defined. ' +
     'It must be set when using Next.js basePath.'
@@ -154,4 +154,4 @@ class ApiClient {
   }
 }
 
-export const apiClient = new ApiClient(API_BASE_URL); 
+export const apiClient = new ApiClient(API_BASE_URL as string); 
