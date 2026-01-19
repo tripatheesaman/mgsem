@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "./components/AuthProvider";
 import { ToastProvider } from "./components/ToastContext";
+import { BASE_PATH } from "./lib/constants";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
   title: "Work Order Management",
   description: "Full stack work order management application",
   icons: {
-    icon: '/nac_icon.png',
+    icon: `${BASE_PATH}/nac_icon.png`,
   },
 };
 
