@@ -16,7 +16,7 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
 
-    const url = `/api${endpoint}`;
+    const url = `${BASE_PATH}/api${endpoint}`;
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
