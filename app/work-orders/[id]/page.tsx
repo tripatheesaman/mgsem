@@ -13,6 +13,7 @@ import { validateAction, validateSparePart, validateFinding, validateCompletionD
 import { WorkOrder, Finding, Action, SparePart, Technician, ActionTechnician, ActionDate, FindingDate, Unit, CheckingAuthority } from '../../types';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
 import { WORK_TYPES } from '../../utils/workTypes';
+import { BASE_PATH } from '../../lib/constants';
 
 // Helper to normalize a timestamp or time string to HH:MM for <input type="time">
 function toTimeHHMM(value: string): string {
@@ -1790,7 +1791,7 @@ export default function WorkOrderDetailPage() {
                 // Display as image
                 <div className="space-y-2">
                   <Image
-                    src={`/${workOrder.reference_document}`}
+                    src={`${BASE_PATH}/${workOrder.reference_document}`}
                     alt="Reference"
                     width={400}
                     height={300}
@@ -2376,7 +2377,7 @@ export default function WorkOrderDetailPage() {
                 
                 {finding.reference_image && (
                   <Image 
-                    src={`/${finding.reference_image}`} 
+                    src={`${BASE_PATH}/${finding.reference_image}`} 
                     alt="Reference" 
                     width={200}
                     height={150}

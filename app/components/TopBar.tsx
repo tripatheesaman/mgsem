@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAuth } from './AuthProvider';
 import { NotificationBell } from './NotificationBell';
 import Image from 'next/image';
+import { BASE_PATH } from '../lib/constants';
 
 export const TopBar: React.FC = () => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -24,7 +25,7 @@ export const TopBar: React.FC = () => {
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-3">
             <Image 
-              src="/logo.png" 
+              src={`${BASE_PATH}/logo.png`} 
               alt="Nepal Airlines Logo" 
               width={128}
               height={128}

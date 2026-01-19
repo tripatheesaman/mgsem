@@ -7,6 +7,7 @@ import { DashboardStats } from '../types';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../components/AuthProvider';
 import Image from 'next/image';
+import { BASE_PATH } from '../lib/constants';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -57,7 +58,7 @@ export default function DashboardPage() {
     <div>
       <div className="flex items-center space-x-3 mb-2">
         <Image 
-          src="/nac_icon.png" 
+          src={`${BASE_PATH}/nac_icon.png`} 
           alt="NAC Icon" 
           width={32}
           height={32}
