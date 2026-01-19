@@ -2,6 +2,7 @@ import { ApiResponse } from '../types';
 
 
 const BASE_PATH = "/mgsem";
+const API_BASE = `${BASE_PATH}/api`;
 
 class ApiClient {
   private getToken(): string | null {
@@ -16,7 +17,7 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
 
-    const url = `${BASE_PATH}/api${endpoint}`;
+    const url = `${API_BASE}${endpoint}`;
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -86,7 +87,7 @@ class ApiClient {
   }
 
   async getBlob(endpoint: string): Promise<{ ok: boolean; blob?: Blob; filename?: string }> {
-    const url = `${BASE_PATH}/api${endpoint}`;
+    const url = `${API_BASE}${endpoint}`;
     const headers: Record<string, string> = {};
     const token = this.getToken();
     if (token) {
