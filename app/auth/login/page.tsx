@@ -10,6 +10,7 @@ import { Input } from '../../components/Input';
 import { apiClient } from '../../utils/api';
 import { LoginRequest, LoginResponse } from '../../types';
 import Image from 'next/image';
+import { BASE_PATH } from '../../lib/constants';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState<LoginRequest>({
@@ -72,7 +73,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <Image 
-              src="/logo.png" 
+              src={`${BASE_PATH}/logo.png`}
               alt="Nepal Airlines Logo" 
               width={128}
               height={64}
