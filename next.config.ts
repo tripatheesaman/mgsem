@@ -7,7 +7,6 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   generateEtags: false,
-
   basePath: "/mgsem",
   trailingSlash: true,
 

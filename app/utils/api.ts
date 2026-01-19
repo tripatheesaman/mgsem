@@ -1,5 +1,8 @@
 import { ApiResponse } from '../types';
 
+
+const BASE_PATH = "/mgsem";
+
 class ApiClient {
   private getToken(): string | null {
     if (typeof window !== 'undefined') {
@@ -83,8 +86,7 @@ class ApiClient {
   }
 
   async getBlob(endpoint: string): Promise<{ ok: boolean; blob?: Blob; filename?: string }> {
-    const url = `/api${endpoint}`;
-
+    const url = `${BASE_PATH}/api${endpoint}`;
     const headers: Record<string, string> = {};
     const token = this.getToken();
     if (token) {
