@@ -350,21 +350,12 @@ export default function WorkOrderDetailPage() {
         const uploadFormData = new FormData();
         uploadFormData.append('file', newFinding.reference_image);
 
-        const uploadResponse = await fetch('/api/upload', {
-          method: 'POST',
-          body: uploadFormData,
-        });
+        const uploadResult = await apiClient.upload<{ path: string; originalName: string; size: number; type: string }>('/upload', uploadFormData);
 
-        if (uploadResponse.ok) {
-          const uploadResult = await uploadResponse.json();
-          if (uploadResult.success) {
-            referenceImagePath = uploadResult.data.path;
-          } else {
-            toast.showError('Error uploading image', uploadResult.error);
-            return;
-          }
+        if (uploadResult.success && uploadResult.data) {
+          referenceImagePath = uploadResult.data.path;
         } else {
-          toast.showError('Error uploading image');
+          toast.showError('Error uploading image', uploadResult.error || 'File upload failed');
           return;
         }
       }

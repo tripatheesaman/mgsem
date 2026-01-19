@@ -14,15 +14,20 @@ class ApiClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    isFormData: boolean = false
   ): Promise<ApiResponse<T>> {
 
     const url = `${API_BASE}${endpoint}`;
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
     };
+
+    // Only set JSON content type when we're not sending FormData.
+    if (!isFormData) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     const token = this.getToken();
     if (token) {
@@ -40,7 +45,7 @@ class ApiClient {
       if (!text || !text.trim()) {
         return {
           success: false,
-          error: `Empty response (${response.status})`,
+          error: `Empty response: (${response.status})`,
         };
       }
 
@@ -86,6 +91,9 @@ class ApiClient {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
 
+
+  
+
   async getBlob(endpoint: string): Promise<{ ok: boolean; blob?: Blob; filename?: string }> {
     const url = `${API_BASE}${endpoint}`;
     const headers: Record<string, string> = {};
@@ -123,6 +131,17 @@ class ApiClient {
     } catch (err) {
       return { ok: false };
     }
+  }
+
+  upload<T>(endpoint: string, formData: FormData) {
+    return this.request<T>(
+      endpoint,
+      {
+        method: 'POST',
+        body: formData,
+      },
+      true
+    );
   }
 }
 

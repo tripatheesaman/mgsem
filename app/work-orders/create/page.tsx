@@ -204,24 +204,14 @@ export default function CreateWorkOrderPage() {
           uploadFormData.append('work_order_no', formData.work_order_no);
         }
 
-        const uploadResponse = await fetch('/api/upload', {
-          method: 'POST',
-          body: uploadFormData,
-        });
+        const uploadResult = await apiClient.upload<{ path: string; originalName: string; size: number; type: string }>('/upload', uploadFormData);
 
-        if (uploadResponse.ok) {
-          const uploadResult = await uploadResponse.json();
-          if (uploadResult.success) {
-            referenceDocumentPath = uploadResult.data.path;
-            setUploadProgress('File uploaded successfully!');
-          } else {
-            setUploadProgress('');
-            toast.showError('File Upload Error', uploadResult.error || 'File upload failed');
-            return;
-          }
+        if (uploadResult.success && uploadResult.data) {
+          referenceDocumentPath = uploadResult.data.path;
+          setUploadProgress('File uploaded successfully!');
         } else {
           setUploadProgress('');
-          toast.showError('File Upload Error', 'File upload failed');
+          toast.showError('File Upload Error', uploadResult.error || 'File upload failed');
           return;
         }
       }
