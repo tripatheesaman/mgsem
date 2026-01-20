@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
@@ -43,7 +43,6 @@ export default function CreateWorkOrderPage() {
   });
   const [loading, setLoading] = useState(false);
   const [generatingNumber, setGeneratingNumber] = useState(false);
-  const numberDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const [errors, setErrors] = useState<Partial<CreateWorkOrderForm>>({});
   const [uploadProgress, setUploadProgress] = useState<string>('');
   const router = useRouter();
@@ -60,48 +59,50 @@ export default function CreateWorkOrderPage() {
     }));
   }, []);
 
-  // Auto-generate work order number when work type is selected.
-  // Debounced to avoid incrementing counters on each keystroke (esp. for "Others").
+  // Auto-generate work order number when work type is selected
   useEffect(() => {
-    // If already generated or in progress, skip
-    if (generatingNumber || formData.work_order_no) return;
-
-    const workTypeForCode =
-      formData.work_type === 'Others' ? 'Others' : formData.work_type;
-
-    if (!workTypeForCode) return;
-
-    // Debounce to avoid rapid repeat calls
-    if (numberDebounceRef.current) {
-      clearTimeout(numberDebounceRef.current);
-    }
-
-    numberDebounceRef.current = setTimeout(async () => {
-      setGeneratingNumber(true);
-      try {
-        const response = await apiClient.post<{ work_order_no: string }>(
-          '/work-orders/generate-number',
-          { work_type: workTypeForCode, work_type_code: workTypeForCode === 'Others' ? 'O' : undefined }
-        );
-        if (response.success && response.data) {
-          setFormData(prev => ({
-            ...prev,
-            work_order_no: response.data!.work_order_no
-          }));
+    if (formData.work_type && formData.work_type !== 'Others') {
+      const generateNumber = async () => {
+        setGeneratingNumber(true);
+        try {
+          const response = await apiClient.post<{ work_order_no: string }>('/work-orders/generate-number', {
+            work_type: formData.work_type
+          });
+          if (response.success && response.data) {
+            setFormData(prev => ({
+              ...prev,
+              work_order_no: response.data!.work_order_no
+            }));
+          }
+        } catch {
+          // Silently fail, user can still create work order
+        } finally {
+          setGeneratingNumber(false);
         }
-      } catch {
-        // Silently fail, user can still create work order
-      } finally {
-        setGeneratingNumber(false);
-      }
-    }, 300);
-
-    return () => {
-      if (numberDebounceRef.current) {
-        clearTimeout(numberDebounceRef.current);
-      }
-    };
-  }, [formData.work_type, formData.work_order_no, generatingNumber]);
+      };
+      generateNumber();
+    } else if (formData.work_type === 'Others' && formData.work_type_other) {
+      const generateNumber = async () => {
+        setGeneratingNumber(true);
+        try {
+          const response = await apiClient.post<{ work_order_no: string }>('/work-orders/generate-number', {
+            work_type: formData.work_type_other
+          });
+          if (response.success && response.data) {
+            setFormData(prev => ({
+              ...prev,
+              work_order_no: response.data!.work_order_no
+            }));
+          }
+        } catch {
+          // Silently fail
+        } finally {
+          setGeneratingNumber(false);
+        }
+      };
+      generateNumber();
+    }
+  }, [formData.work_type, formData.work_type_other]);
 
   const validateForm = (): boolean => {
     // Work order number will be auto-generated if empty, so we don't validate it
@@ -212,7 +213,6 @@ export default function CreateWorkOrderPage() {
 
       // Determine the final work_type value with proper case formatting
       let finalWorkType = formData.work_type;
-      let finalWorkTypeCode: string | undefined = formData.work_type === 'Others' ? 'O' : undefined;
       if (formData.work_type === 'Others' && formData.work_type_other) {
         // Convert to proper case (first letter of each word capitalized)
         finalWorkType = formData.work_type_other
@@ -232,7 +232,6 @@ export default function CreateWorkOrderPage() {
         km_hrs: formData.km_hrs ? parseInt(formData.km_hrs) : undefined,
         requested_by: formData.requested_by,
         work_type: finalWorkType,
-        work_type_code: finalWorkTypeCode,
         job_allocation_time: formattedJobAllocationTime,
         description: formData.description.trim(),
         frs_reference_number: formData.frs_reference_number?.trim() || undefined,
