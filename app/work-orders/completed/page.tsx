@@ -110,12 +110,8 @@ export default function CompletedWorkOrdersPage() {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-        
-        toast.showSuccess('Success', 'Report generated successfully');
-      } else {
-        const errorData = await response.json();
-        toast.showError('Error', errorData.error || 'Failed to generate report');
-      }
+
+      toast.showSuccess('Success', 'Report generated successfully');
          } catch {
        toast.showError('Error', 'Failed to generate report');
      }
