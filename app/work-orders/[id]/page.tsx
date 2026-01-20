@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
-import Link from 'next/link';
 import { Button } from '../../components/Button';
 import { useAuth } from '../../components/AuthProvider';
 import { Input } from '../../components/Input';
@@ -26,7 +25,7 @@ function toTimeHHMM(value: string): string {
   if (hhmmMatch && hhmmMatch[1]) return hhmmMatch[1];
   // Fallback: try split by space
   const parts = value.split(' ');
-  if (parts.length > 1 && /\d{2}:\d{2}/.test(parts[1])) return parts[1].slice(0, 5);
+  if (parts.length > 1 && /\d{2}:\d{2}/.test(parts[1])) return parts[1].slice(0,5);
   return '';
 }
 
@@ -80,7 +79,7 @@ export default function WorkOrderDetailPage() {
   const [isEditingRejected, setIsEditingRejected] = useState(false);
   const params = useParams();
   const workOrderId = Number(params.id);
-
+  
   const [workOrder, setWorkOrder] = useState<WorkOrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [editCore, setEditCore] = useState({
@@ -97,7 +96,7 @@ export default function WorkOrderDetailPage() {
   // Add new states for admin/superadmin editing
   const [isEditingWorkOrder, setIsEditingWorkOrder] = useState(false);
   const [isApprovingWorkOrder, setIsApprovingWorkOrder] = useState(false);
-
+  
   const [technicians, setTechnicians] = useState<Technician[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [workOrderCheckingAuthorities, setWorkOrderCheckingAuthorities] = useState<CheckingAuthority[]>([]);
@@ -207,20 +206,20 @@ export default function WorkOrderDetailPage() {
   const fetchWorkOrderDetails = useCallback(async () => {
     try {
       const response = await apiClient.get<WorkOrderDetail>(`/work-orders/${workOrderId}`);
-
+      
       if (response.success && response.data) {
         // Ensure arrays are always arrays, not null
         const workOrderWithArrays = {
           ...response.data,
           findings: response.data.findings || []
         };
-
+        
         // Ensure each finding has actions array
         workOrderWithArrays.findings = workOrderWithArrays.findings.map(finding => ({
           ...finding,
           actions: finding.actions || []
         }));
-
+        
         // Ensure each action has spare_parts array
         workOrderWithArrays.findings = workOrderWithArrays.findings.map(finding => ({
           ...finding,
@@ -229,7 +228,7 @@ export default function WorkOrderDetailPage() {
             spare_parts: action.spare_parts || []
           }))
         }));
-
+        
         setWorkOrder(workOrderWithArrays);
         // Prime edit buffer
         setEditCore({
@@ -369,7 +368,7 @@ export default function WorkOrderDetailPage() {
         start_time: newFinding.start_time,
         end_time: newFinding.end_time || null
       });
-
+      
       if (response.success && response.data) {
         const createdFinding = response.data;
         // Fetch finding dates after creation
@@ -421,7 +420,7 @@ export default function WorkOrderDetailPage() {
 
   const handleStartAgain = async () => {
     if (!selectedActionForStartAgain) return;
-
+    
     try {
       const response = await apiClient.post(`/actions/${selectedActionForStartAgain}/dates`, {
         action_date: startAgainData.action_date,
@@ -453,10 +452,10 @@ export default function WorkOrderDetailPage() {
           for (const techId of startAgainData.technician_ids) {
             try {
               await apiClient.post(`/actions/${selectedActionForStartAgain}/technicians`, { technician_id: techId });
-            } catch { }
+            } catch {}
           }
         }
-
+        
         setShowStartAgainModal(false);
         setSelectedActionForStartAgain(null);
         setStartAgainData({
@@ -489,7 +488,7 @@ export default function WorkOrderDetailPage() {
         end_time: editActionDateData.end_time || null,
         is_completed: editActionDateData.is_completed
       });
-
+      
       if (response.success) {
         setEditingActionDate(null);
         setEditActionDateData({
@@ -558,7 +557,7 @@ export default function WorkOrderDetailPage() {
 
   const handleStartAgainFinding = async () => {
     if (!selectedFindingForStartAgain) return;
-
+    
     try {
       const response = await apiClient.post(`/findings/${selectedFindingForStartAgain}/dates`, {
         finding_date: startAgainFindingData.finding_date,
@@ -647,7 +646,7 @@ export default function WorkOrderDetailPage() {
       updatePayload.end_time = normalizedEndTime || null;
 
       const response = await apiClient.put(`/findings/${findingId}/dates/${editingFindingDate}`, updatePayload);
-
+      
       if (response.success) {
         setEditingFindingDate(null);
         setEditFindingDateData({
@@ -736,7 +735,7 @@ export default function WorkOrderDetailPage() {
         is_completed: newAction.is_completed,
         remarks: newAction.remarks || null
       });
-
+      
       if (response.success) {
         // Assign selected technicians to this new action
         const createdAction = response.data as unknown as Action;
@@ -744,7 +743,7 @@ export default function WorkOrderDetailPage() {
           for (const techId of newActionTechnicianIds) {
             try {
               await apiClient.post<ActionTechnician>(`/actions/${createdAction.id}/technicians`, { technician_id: techId });
-            } catch { }
+            } catch {}
           }
         }
         setNewAction({
@@ -782,7 +781,7 @@ export default function WorkOrderDetailPage() {
         unit: newSparePart.unit,
         replacement_number: newSparePart.replacement_number || null
       });
-
+      
       if (response.success) {
         setNewSparePart({
           part_name: '',
@@ -817,7 +816,7 @@ export default function WorkOrderDetailPage() {
         description: editFinding.description,
         reference_image: editFinding.reference_image
       });
-
+      
       if (response.success) {
         setEditFinding({ description: '' });
         setEditingFinding(null);
@@ -837,10 +836,10 @@ export default function WorkOrderDetailPage() {
 
   const confirmDeleteFinding = async () => {
     if (!itemToDelete) return;
-
+    
     try {
       const response = await apiClient.delete(`/findings/${itemToDelete.id}`);
-
+      
       if (response.success) {
         fetchWorkOrderDetails();
         toast.showSuccess('Troubleshooting deleted successfully');
@@ -870,7 +869,7 @@ export default function WorkOrderDetailPage() {
       // Find the current action and its finding
       let currentAction: Action | undefined;
       let finding: FindingWithActions | undefined;
-
+      
       for (const f of workOrder.findings) {
         const action = f.actions.find(a => a.id === actionId);
         if (action) {
@@ -885,7 +884,7 @@ export default function WorkOrderDetailPage() {
         return;
       }
 
-      // Previous latest-action-date checks removed (client-side date validation disabled)
+  // Previous latest-action-date checks removed (client-side date validation disabled)
 
       const response = await apiClient.put<Action>(`/actions/${actionId}`, {
         description: editAction.description,
@@ -894,7 +893,7 @@ export default function WorkOrderDetailPage() {
         end_time: editAction.end_time,
         remarks: editAction.remarks || null
       });
-
+      
       if (response.success) {
         setEditAction({
           description: '',
@@ -920,10 +919,10 @@ export default function WorkOrderDetailPage() {
 
   const confirmDeleteAction = async () => {
     if (!itemToDelete) return;
-
+    
     try {
       const response = await apiClient.delete(`/actions/${itemToDelete.id}`);
-
+      
       if (response.success) {
         fetchWorkOrderDetails();
         toast.showSuccess('Action deleted successfully');
@@ -952,7 +951,7 @@ export default function WorkOrderDetailPage() {
         unit: editSparePart.unit,
         replacement_number: editSparePart.replacement_number || null
       });
-
+      
       if (response.success) {
         setEditSparePart({
           part_name: '',
@@ -978,10 +977,10 @@ export default function WorkOrderDetailPage() {
 
   const confirmDeleteSparePart = async () => {
     if (!itemToDelete) return;
-
+    
     try {
       const response = await apiClient.delete(`/spare-parts/${itemToDelete.id}`);
-
+      
       if (response.success) {
         fetchWorkOrderDetails();
         toast.showSuccess('Spare part deleted successfully');
@@ -1055,11 +1054,11 @@ export default function WorkOrderDetailPage() {
       }
     });
 
-    const latestActionDate = allActions.length > 0
+    const latestActionDate = allActions.length > 0 
       ? Math.max(...allActions.map(a => new Date(a.action_date).getTime()))
       : null;
-
-    const lastActionDate = latestActionDate
+    
+    const lastActionDate = latestActionDate 
       ? new Date(latestActionDate).toISOString().split('T')[0]
       : undefined;
 
@@ -1069,7 +1068,7 @@ export default function WorkOrderDetailPage() {
       workOrder.work_order_date,
       lastActionDate
     );
-
+    
     if (dateValidation) {
       toast.showError('Validation Error', dateValidation.message);
       return;
@@ -1079,7 +1078,7 @@ export default function WorkOrderDetailPage() {
       const response = await apiClient.put<WorkOrder>(`/work-orders/${workOrderId}/complete`, {
         work_completed_date: completionDate
       });
-
+      
       if (response.success) {
         setShowCompleteModal(false);
         fetchWorkOrderDetails();
@@ -1090,8 +1089,8 @@ export default function WorkOrderDetailPage() {
       // If server returned structured validation errors, show a friendly modal with details
       if (!response.success && response.data) {
         const parts: string[] = [];
-        const respData = response.data as unknown as {
-          incomplete_actions?: Array<{ id: number; description?: string }>;
+        const respData = response.data as unknown as { 
+          incomplete_actions?: Array<{ id: number; description?: string }>; 
           missing_end_times?: Array<{ action_id: number; action_date: string }>;
           missing_finding_end_times?: Array<{ finding_id: number; finding_date: string }>;
         };
@@ -1129,7 +1128,7 @@ export default function WorkOrderDetailPage() {
       const response = await apiClient.put<WorkOrder>(`/work-orders/${workOrderId}/approve-completion`, {
         approved: true
       });
-
+      
       if (response.success) {
         setShowCompleteModal(false);
         fetchWorkOrderDetails();
@@ -1167,7 +1166,7 @@ export default function WorkOrderDetailPage() {
   const handleApproveWorkOrder = async () => {
     try {
       const response = await apiClient.put<WorkOrder>(`/work-orders/${workOrderId}/approve`, {});
-
+      
       if (response.success) {
         fetchWorkOrderDetails();
         toast.showSuccess('Work order approved successfully');
@@ -1190,7 +1189,7 @@ export default function WorkOrderDetailPage() {
       const response = await apiClient.put<WorkOrder>(`/work-orders/${workOrderId}/reject`, {
         reason: rejectionReason
       });
-
+      
       if (response.success) {
         setShowRejectModal(false);
         setRejectionReason('');
@@ -1227,38 +1226,26 @@ export default function WorkOrderDetailPage() {
     }
 
     setIsUploadingReferenceImage(true);
+
     try {
       const formData = new FormData();
       formData.append('reference_image', referenceImageFile);
 
-      // Get the auth token from localStorage (same as apiClient)
-      const token = localStorage.getItem('token');
+      const response = await apiClient.put(
+        `/work-orders/${workOrderId}/reference-image`,
+        formData
+      );
 
-      if (!token) {
-        toast.showError('Authentication Error', 'Please log in again');
-        return;
-      }
-
-      const response = await fetch(`/api/work-orders/${workOrderId}/reference-image`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
+      if (response.success) {
         setShowReferenceImageModal(false);
         setReferenceImageFile(null);
         fetchWorkOrderDetails();
         toast.showSuccess('Reference image updated successfully');
       } else {
-        toast.showError('Error updating reference image', result.error);
+        toast.showError('Error updating reference image', response.error);
       }
     } catch (error) {
-      console.error('Error updating reference image:', error);
+      console.error(error);
       toast.showError('Error updating reference image');
     } finally {
       setIsUploadingReferenceImage(false);
@@ -1267,31 +1254,18 @@ export default function WorkOrderDetailPage() {
 
   const handleDeleteReferenceImage = async () => {
     try {
-      // Get the auth token from localStorage (same as apiClient)
-      const token = localStorage.getItem('token');
+      const response = await apiClient.delete(
+        `/work-orders/${workOrderId}/reference-image`
+      );
 
-      if (!token) {
-        toast.showError('Authentication Error', 'Please log in again');
-        return;
-      }
-
-      const response = await fetch(`/api/work-orders/${workOrderId}/reference-image`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
+      if (response.success) {
         fetchWorkOrderDetails();
         toast.showSuccess('Reference image deleted successfully');
       } else {
-        toast.showError('Error deleting reference image', result.error);
+        toast.showError('Error deleting reference image', response.error);
       }
     } catch (error) {
-      console.error('Error deleting reference image:', error);
+      console.error(error);
       toast.showError('Error deleting reference image');
     }
   };
@@ -1338,7 +1312,7 @@ export default function WorkOrderDetailPage() {
           </div>
         </div>
       )}
-
+      
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -1504,7 +1478,7 @@ export default function WorkOrderDetailPage() {
                       frs_reference_number: editCore.frs_reference_number || null,
                       complaints: editComplaints.filter(c => c.text && c.text.trim() !== '').map(c => c.text.trim()),
                     });
-
+                    
                     if (!saveRes.success) {
                       toast.showError('Failed to save changes', saveRes.error);
                       return;
@@ -1532,8 +1506,8 @@ export default function WorkOrderDetailPage() {
               >
                 {isApprovingWorkOrder ? '✅ Save & Approve' : '✅ Save Changes'}
               </Button>
-              <Button
-                variant="outline"
+              <Button 
+                variant="outline" 
                 onClick={() => {
                   setIsEditingWorkOrder(false);
                   setIsApprovingWorkOrder(false);
@@ -1586,21 +1560,21 @@ export default function WorkOrderDetailPage() {
               <div>
                 <select
                   value={editCore.work_type}
-                  onChange={(e) => setEditCore(prev => ({
-                    ...prev,
+                  onChange={(e) => setEditCore(prev => ({ 
+                    ...prev, 
                     work_type: e.target.value,
                     work_type_other: e.target.value !== 'Others' ? '' : prev.work_type_other
                   }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#08398F] focus:border-[#08398F]"
                 >
-                  <option value="">Select work type</option>
-                  {WORK_TYPES.map((type) => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
+                <option value="">Select work type</option>
+                {WORK_TYPES.map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
                 </select>
                 {editCore.work_type === 'Others' && (
-                  <Input
-                    label=""
+              <Input
+                label=""
                     value={editCore.work_type_other || ''}
                     onChange={(e) => setEditCore(prev => ({ ...prev, work_type_other: e.target.value }))}
                     placeholder="Please specify the work type"
@@ -1685,7 +1659,7 @@ export default function WorkOrderDetailPage() {
             )}
           </div>
         </div>
-
+        
         {/* Complaints Section */}
         <div className="mt-4 pt-4 border-t border-gray-200">
           <span className="font-medium text-gray-700">Complaints:</span>
@@ -1749,9 +1723,9 @@ export default function WorkOrderDetailPage() {
             </div>
           )}
         </div>
-
+        
         {/* Reference Document/Image */}
-        <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-4 pt-4 border-t border-gray-200">
           <div className="flex justify-between items-center mb-2">
             <span className="font-medium text-gray-700">Reference Document/Image:</span>
             {user && (user.role === 'admin' || user.role === 'superadmin') && (
@@ -1776,7 +1750,7 @@ export default function WorkOrderDetailPage() {
               </div>
             )}
           </div>
-
+          
           {workOrder.reference_document ? (
             <div className="mt-2">
               {workOrder.reference_document.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
@@ -1789,17 +1763,15 @@ export default function WorkOrderDetailPage() {
                     height={300}
                     className="max-w-xs rounded border h-auto w-auto"
                   />
-                  <Link
-                    href={`/${workOrder.reference_document}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    prefetch={false}
+              <a
+                href={`/${workOrder.reference_document}`}
+                target="_blank"
+                rel="noreferrer"
                     className="text-[#08398F] underline text-sm"
-                  >
-
+              >
                     View full size
-                  </Link>
-                </div>
+              </a>
+            </div>
               ) : workOrder.reference_document.match(/\.pdf$/i) ? (
                 // Display as PDF
                 <div className="space-y-2">
@@ -1808,29 +1780,27 @@ export default function WorkOrderDetailPage() {
                     <div>
                       <p className="text-sm font-medium text-red-800">PDF Document</p>
                       <p className="text-xs text-red-700">Click below to view</p>
-                    </div>
+          </div>
                   </div>
-                  <Link
+                  <a
                     href={`/${workOrder.reference_document}`}
                     target="_blank"
                     rel="noreferrer"
-                    prefetch={false}
                     className="text-[#08398F] underline text-sm"
                   >
                     📄 View PDF Document
-                  </Link>
+                  </a>
                 </div>
               ) : (
                 // Display as other document link
-                <Link
+                <a
                   href={`/${workOrder.reference_document}`}
                   target="_blank"
                   rel="noreferrer"
-                  prefetch={false}
                   className="text-[#08398F] underline"
                 >
                   📄 View document
-                </Link>
+                </a>
               )}
             </div>
           ) : (
@@ -1888,25 +1858,16 @@ export default function WorkOrderDetailPage() {
                               const formData = new FormData();
                               formData.append('file', file);
 
-                              const token = localStorage.getItem('token');
-                              const headers: Record<string, string> = {};
-                              if (token) {
-                                headers.Authorization = `Bearer ${token}`;
-                              }
+                              const response = await apiClient.post(
+                                `/work-orders/${workOrderId}/signed-document`,
+                                formData
+                              );
 
-                              const response = await fetch(`/api/work-orders/${workOrderId}/signed-document`, {
-                                method: 'POST',
-                                headers,
-                                body: formData
-                              });
-
-                              const result = await response.json();
-
-                              if (result.success) {
+                              if (response.success) {
                                 fetchWorkOrderDetails();
                                 toast.showSuccess('Signed document replaced successfully');
                               } else {
-                                toast.showError('Error', result.error || 'Failed to replace signed document');
+                                toast.showError('Error', response.error || 'Failed to replace signed document');
                               }
                             } catch (error) {
                               console.error('Error replacing signed document:', error);
@@ -1976,25 +1937,16 @@ export default function WorkOrderDetailPage() {
                               const formData = new FormData();
                               formData.append('file', file);
 
-                              const token = localStorage.getItem('token');
-                              const headers: Record<string, string> = {};
-                              if (token) {
-                                headers.Authorization = `Bearer ${token}`;
-                              }
+                              const response = await apiClient.post(
+                                `/work-orders/${workOrderId}/signed-document`,
+                                formData
+                              );
 
-                              const response = await fetch(`/api/work-orders/${workOrderId}/signed-document`, {
-                                method: 'POST',
-                                headers,
-                                body: formData
-                              });
-
-                              const result = await response.json();
-
-                              if (result.success) {
+                              if (response.success) {
                                 fetchWorkOrderDetails();
                                 toast.showSuccess('Signed document uploaded successfully');
                               } else {
-                                toast.showError('Error', result.error || 'Failed to upload signed document');
+                                toast.showError('Error', response.error || 'Failed to upload signed document');
                               }
                             } catch (error) {
                               console.error('Error uploading signed document:', error);
@@ -2030,10 +1982,10 @@ export default function WorkOrderDetailPage() {
             <span className="font-medium text-blue-600">Completion Request Status:</span>
             <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
               <p className="text-blue-800">
-                ✅ Completion requested on {workOrder.completion_requested_at ?
+                ✅ Completion requested on {workOrder.completion_requested_at ? 
                   new Date(workOrder.completion_requested_at).toLocaleDateString('en-GB') : 'N/A'}
                 <br />
-                📅 Requested completion date: {workOrder.work_completed_date ?
+                📅 Requested completion date: {workOrder.work_completed_date ? 
                   new Date(workOrder.work_completed_date).toLocaleDateString('en-GB') : 'N/A'}
                 <br />
                 ⏳ Awaiting admin approval...
@@ -2052,7 +2004,7 @@ export default function WorkOrderDetailPage() {
                 <br />
                 👤 Approved by: {workOrder.completion_approved_by_name || 'N/A'}
                 <br />
-                📅 Completed on: {workOrder.work_completed_date ?
+                📅 Completed on: {workOrder.work_completed_date ? 
                   new Date(workOrder.work_completed_date).toLocaleDateString('en-GB') : 'N/A'}
               </p>
             </div>
@@ -2107,25 +2059,16 @@ export default function WorkOrderDetailPage() {
                               const formData = new FormData();
                               formData.append('file', file);
 
-                              const token = localStorage.getItem('token');
-                              const headers: Record<string, string> = {};
-                              if (token) {
-                                headers.Authorization = `Bearer ${token}`;
-                              }
+                              const response = await apiClient.post(
+                                `/work-orders/${workOrderId}/signed-document`,
+                                formData
+                              );
 
-                              const response = await fetch(`/api/work-orders/${workOrderId}/signed-document`, {
-                                method: 'POST',
-                                headers,
-                                body: formData
-                              });
-
-                              const result = await response.json();
-
-                              if (result.success) {
+                              if (response.success) {
                                 fetchWorkOrderDetails();
                                 toast.showSuccess('Signed document replaced successfully');
                               } else {
-                                toast.showError('Error', result.error || 'Failed to replace signed document');
+                                toast.showError('Error', response.error || 'Failed to replace signed document');
                               }
                             } catch (error) {
                               console.error('Error replacing signed document:', error);
@@ -2195,25 +2138,16 @@ export default function WorkOrderDetailPage() {
                               const formData = new FormData();
                               formData.append('file', file);
 
-                              const token = localStorage.getItem('token');
-                              const headers: Record<string, string> = {};
-                              if (token) {
-                                headers.Authorization = `Bearer ${token}`;
-                              }
+                              const response = await apiClient.post(
+                                `/work-orders/${workOrderId}/signed-document`,
+                                formData
+                              );
 
-                              const response = await fetch(`/api/work-orders/${workOrderId}/signed-document`, {
-                                method: 'POST',
-                                headers,
-                                body: formData
-                              });
-
-                              const result = await response.json();
-
-                              if (result.success) {
+                              if (response.success) {
                                 fetchWorkOrderDetails();
                                 toast.showSuccess('Signed document uploaded successfully');
                               } else {
-                                toast.showError('Error', result.error || 'Failed to upload signed document');
+                                toast.showError('Error', response.error || 'Failed to upload signed document');
                               }
                             } catch (error) {
                               console.error('Error uploading signed document:', error);
@@ -2315,8 +2249,8 @@ export default function WorkOrderDetailPage() {
                         <Button className="w-full" onClick={async () => { await handleAddFinding(); setAddFindingFor(null); }}>
                           ➕ Add Troubleshooting
                         </Button>
-                        <Button variant="outline" onClick={() => {
-                          setAddFindingFor(null);
+                        <Button variant="outline" onClick={() => { 
+                          setAddFindingFor(null); 
                           setNewFinding({
                             description: '',
                             finding_date: new Date().toISOString().split('T')[0],
@@ -2349,8 +2283,8 @@ export default function WorkOrderDetailPage() {
                   <div className="flex space-x-2">
                     {(workOrder.status !== 'pending' && workOrder.status !== 'completed' && workOrder.status !== 'completion_requested') && (
                       <>
-                        <Button
-                          size="sm"
+                        <Button 
+                          size="sm" 
                           variant="outline"
                           onClick={() => {
                             setEditFinding({ description: finding.description });
@@ -2359,8 +2293,8 @@ export default function WorkOrderDetailPage() {
                         >
                           ✏️ Edit
                         </Button>
-                        <Button
-                          size="sm"
+                        <Button 
+                          size="sm" 
                           variant="outline"
                           onClick={() => handleDeleteFinding(finding.id)}
                         >
@@ -2370,14 +2304,14 @@ export default function WorkOrderDetailPage() {
                     )}
                   </div>
                 </div>
-
+                
                 {finding.reference_image && (
-                  <Image
-                    src={`${BASE_PATH}/${finding.reference_image}`}
-                    alt="Reference"
+                  <Image 
+                    src={`${BASE_PATH}/${finding.reference_image}`} 
+                    alt="Reference" 
                     width={200}
                     height={150}
-                    className="mb-3 max-w-xs rounded"
+                    className="mb-3 max-w-xs rounded" 
                   />
                 )}
 
@@ -2391,24 +2325,24 @@ export default function WorkOrderDetailPage() {
                       <div className="mb-3 space-y-2">
                         <div className="flex justify-between items-center mb-2">
                           <div className="text-sm font-medium text-gray-700">Troubleshooting Dates:</div>
-                          {workOrder.status !== 'completed' && workOrder.status !== 'completion_requested' &&
-                            !latestDate.is_completed &&
-                            selectedFindingForStartAgain !== finding.id && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setSelectedFindingForStartAgain(finding.id);
-                                  setStartAgainFindingData({
-                                    finding_date: new Date().toISOString().split('T')[0],
-                                    start_time: '',
-                                    end_time: ''
-                                  });
-                                }}
-                              >
-                                🔄 Start Again
-                              </Button>
-                            )}
+                          {workOrder.status !== 'completed' && workOrder.status !== 'completion_requested' && 
+                           !latestDate.is_completed && 
+                           selectedFindingForStartAgain !== finding.id && (
+                            <Button 
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedFindingForStartAgain(finding.id);
+                                setStartAgainFindingData({
+                                  finding_date: new Date().toISOString().split('T')[0],
+                                  start_time: '',
+                                  end_time: ''
+                                });
+                              }}
+                            >
+                              🔄 Start Again
+                            </Button>
+                          )}
                         </div>
                         {sortedDates.map((fd) => (
                           <div key={fd.id} className="p-2 bg-white rounded border text-sm">
@@ -2559,8 +2493,8 @@ export default function WorkOrderDetailPage() {
                               <Button size="sm" onClick={handleStartAgainFinding}>
                                 ➕ Add Date
                               </Button>
-                              <Button
-                                size="sm"
+                              <Button 
+                                size="sm" 
                                 variant="outline"
                                 onClick={() => {
                                   setSelectedFindingForStartAgain(null);
@@ -2582,23 +2516,23 @@ export default function WorkOrderDetailPage() {
                   // Show Start Again button even if no dates exist yet
                   return (
                     <div className="mb-3">
-                      {workOrder.status !== 'completed' && workOrder.status !== 'completion_requested' &&
-                        selectedFindingForStartAgain !== finding.id && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedFindingForStartAgain(finding.id);
-                              setStartAgainFindingData({
-                                finding_date: new Date().toISOString().split('T')[0],
-                                start_time: '',
-                                end_time: ''
-                              });
-                            }}
-                          >
-                            🔄 Add Troubleshooting Date
-                          </Button>
-                        )}
+                      {workOrder.status !== 'completed' && workOrder.status !== 'completion_requested' && 
+                       selectedFindingForStartAgain !== finding.id && (
+                        <Button 
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedFindingForStartAgain(finding.id);
+                            setStartAgainFindingData({
+                              finding_date: new Date().toISOString().split('T')[0],
+                              start_time: '',
+                              end_time: ''
+                            });
+                          }}
+                        >
+                          🔄 Add Troubleshooting Date
+                        </Button>
+                      )}
                       {selectedFindingForStartAgain === finding.id && (
                         <div className="mt-2 p-3 bg-blue-50 rounded border border-blue-200">
                           <h6 className="font-medium text-blue-900 mb-2">Add New Troubleshooting Date</h6>
@@ -2628,8 +2562,8 @@ export default function WorkOrderDetailPage() {
                             <Button size="sm" onClick={handleStartAgainFinding}>
                               ➕ Add Date
                             </Button>
-                            <Button
-                              size="sm"
+                            <Button 
+                              size="sm" 
                               variant="outline"
                               onClick={() => {
                                 setSelectedFindingForStartAgain(null);
@@ -2685,8 +2619,8 @@ export default function WorkOrderDetailPage() {
                           {workOrder.status !== 'completed' && (
                             <>
                               {/* Removed redundant Start Again, users should use Add Date */}
-                              <Button
-                                size="sm"
+                              <Button 
+                                size="sm" 
                                 variant="outline"
                                 onClick={() => {
                                   const raw = (action.action_date || '').toString();
@@ -2710,8 +2644,8 @@ export default function WorkOrderDetailPage() {
                               >
                                 ✏️ Edit
                               </Button>
-                              <Button
-                                size="sm"
+                              <Button 
+                                size="sm" 
                                 variant="outline"
                                 onClick={() => handleDeleteAction(action.id)}
                               >
@@ -2760,7 +2694,7 @@ export default function WorkOrderDetailPage() {
                         <div className="flex justify-between items-center mb-2">
                           <h6 className="font-medium text-gray-700">Action Dates:</h6>
                           {(actionDates[action.id] && actionDates[action.id].length > 0 ? !actionDates[action.id][0].is_completed : !action.is_completed) && selectedActionForStartAgain !== action.id ? (
-                            <Button
+                            <Button 
                               size="sm"
                               variant="outline"
                               onClick={() => {
@@ -2814,8 +2748,8 @@ export default function WorkOrderDetailPage() {
                                 />
                               </div>
                               <div>
-                                <Button
-                                  size="sm"
+                                <Button 
+                                  size="sm" 
                                   onClick={async () => {
                                     await handleStartAgain();
                                     setStartAgainData(prev => ({
@@ -2833,8 +2767,8 @@ export default function WorkOrderDetailPage() {
                                 </Button>
                               </div>
                               <div>
-                                <Button
-                                  size="sm"
+                                <Button 
+                                  size="sm" 
                                   variant="outline"
                                   onClick={() => {
                                     setSelectedActionForStartAgain(null);
@@ -2849,7 +2783,7 @@ export default function WorkOrderDetailPage() {
                             </div>
                           </div>
                         )}
-
+                        
                         {actionDates[action.id] && actionDates[action.id].length > 0 ? (
                           <div className="space-y-2">
                             {actionDates[action.id].map((actionDate) => (
@@ -2873,22 +2807,22 @@ export default function WorkOrderDetailPage() {
                                       </div>
                                     )}
                                   </div>
-                                  <div className="flex space-x-1">
-                                    <Button
-                                      size="sm"
+                                    <div className="flex space-x-1">
+                                    <Button 
+                                      size="sm" 
                                       variant="outline"
                                       onClick={() => {
                                         // Preselect the date in YYYY-MM-DD format for the date input.
-                                        // actionDate.action_date may come as 'YYYY-MM-DD' or 'YYYY-MM-DDTHH:MM:SSZ'
-                                        const rawDate = (actionDate.action_date || '').toString();
-                                        let normalizedDate = '';
-                                        if (rawDate) {
-                                          const d = new Date(rawDate);
-                                          const y = d.getFullYear();
-                                          const m = String(d.getMonth() + 1).padStart(2, '0');
-                                          const da = String(d.getDate()).padStart(2, '0');
-                                          normalizedDate = `${y}-${m}-${da}`;
-                                        }
+                                          // actionDate.action_date may come as 'YYYY-MM-DD' or 'YYYY-MM-DDTHH:MM:SSZ'
+                                          const rawDate = (actionDate.action_date || '').toString();
+                                          let normalizedDate = '';
+                                          if (rawDate) {
+                                            const d = new Date(rawDate);
+                                            const y = d.getFullYear();
+                                            const m = String(d.getMonth() + 1).padStart(2, '0');
+                                            const da = String(d.getDate()).padStart(2, '0');
+                                            normalizedDate = `${y}-${m}-${da}`;
+                                          }
 
                                         setEditingActionDate(actionDate.id);
                                         setEditActionDateData({
@@ -2902,8 +2836,8 @@ export default function WorkOrderDetailPage() {
                                     >
                                       ✏️
                                     </Button>
-                                    <Button
-                                      size="sm"
+                                    <Button 
+                                      size="sm" 
                                       variant="outline"
                                       onClick={() => handleDeleteActionDate(action.id, actionDate.id)}
                                     >
@@ -2911,7 +2845,7 @@ export default function WorkOrderDetailPage() {
                                     </Button>
                                   </div>
                                 </div>
-
+                                
                                 {/* Edit Action Date Form */}
                                 {editingActionDate === actionDate.id && (
                                   <div className="mt-2 p-2 bg-white rounded border">
@@ -2937,26 +2871,26 @@ export default function WorkOrderDetailPage() {
                                       />
                                     </div>
                                     <div className="flex items-center mt-2 space-x-3">
-                                      <div className="flex items-center space-x-2">
-                                        {(() => {
-                                          const latestForAction = actionDates[action.id] && actionDates[action.id].length > 0 ? actionDates[action.id][0] : undefined;
-                                          const isLatest = latestForAction ? latestForAction.id === actionDate.id : false;
-                                          // Allow toggling completion only for the latest date. Admins may revert a completed earlier date.
-                                          const allowToggle = isLatest || (user && (user.role === 'admin' || user.role === 'superadmin') && actionDate.is_completed);
-                                          return (
-                                            <>
-                                              <input
-                                                type="checkbox"
-                                                checked={editActionDateData.is_completed}
-                                                onChange={(e) => setEditActionDateData(prev => ({ ...prev, is_completed: e.target.checked }))}
-                                                className="rounded border-gray-300"
-                                                disabled={!allowToggle}
-                                              />
-                                              <span className="text-sm font-medium text-gray-700">Completed</span>
-                                            </>
-                                          );
-                                        })()}
-                                      </div>
+                                          <div className="flex items-center space-x-2">
+                                            {(() => {
+                                              const latestForAction = actionDates[action.id] && actionDates[action.id].length > 0 ? actionDates[action.id][0] : undefined;
+                                              const isLatest = latestForAction ? latestForAction.id === actionDate.id : false;
+                                              // Allow toggling completion only for the latest date. Admins may revert a completed earlier date.
+                                              const allowToggle = isLatest || (user && (user.role === 'admin' || user.role === 'superadmin') && actionDate.is_completed);
+                                              return (
+                                                <>
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={editActionDateData.is_completed}
+                                                    onChange={(e) => setEditActionDateData(prev => ({ ...prev, is_completed: e.target.checked }))}
+                                                    className="rounded border-gray-300"
+                                                    disabled={!allowToggle}
+                                                  />
+                                                  <span className="text-sm font-medium text-gray-700">Completed</span>
+                                                </>
+                                              );
+                                            })()}
+                                          </div>
                                     </div>
                                     <div className="flex space-x-2 mt-2">
                                       <Button size="sm" onClick={() => handleEditActionDate(action.id)}>
@@ -2975,7 +2909,7 @@ export default function WorkOrderDetailPage() {
                           <div className="text-sm text-gray-500 italic">No additional dates added</div>
                         )}
                       </div>
-
+                      
                       {/* Edit Action Form */}
                       {editingAction === action.id && (
                         <div className="mb-3 p-3 bg-gray-50 rounded border">
@@ -3022,7 +2956,7 @@ export default function WorkOrderDetailPage() {
                           </div>
                         </div>
                       )}
-
+                      
                       {/* Spare parts for this action */}
                       <div className="ml-4 mt-3">
                         <div className="flex justify-between items-center mb-1">
@@ -3064,8 +2998,8 @@ export default function WorkOrderDetailPage() {
                                 onChange={(e) => setNewSparePart(prev => ({ ...prev, replacement_number: e.target.value }))}
                                 placeholder="Replacement # (optional)"
                               />
-                              <Button
-                                size="sm"
+                              <Button 
+                                size="sm" 
                                 onClick={() => handleAddSparePart(action.id)}
                               >
                                 ➕ Add Spare
@@ -3085,8 +3019,8 @@ export default function WorkOrderDetailPage() {
                                 </div>
                                 {workOrder.status !== 'completed' && (
                                   <div className="flex space-x-1">
-                                    <Button
-                                      size="sm"
+                                    <Button 
+                                      size="sm" 
                                       variant="outline"
                                       onClick={() => {
                                         setEditSparePart({
@@ -3101,8 +3035,8 @@ export default function WorkOrderDetailPage() {
                                     >
                                       ✏️
                                     </Button>
-                                    <Button
-                                      size="sm"
+                                    <Button 
+                                      size="sm" 
                                       variant="outline"
                                       onClick={() => handleDeleteSparePart(sparePart.id)}
                                     >
@@ -3380,8 +3314,8 @@ export default function WorkOrderDetailPage() {
                         <Button className="w-full" onClick={async () => { await handleAddFinding(); setAddFindingFor(null); }}>
                           ➕ Add Troubleshooting
                         </Button>
-                        <Button variant="outline" onClick={() => {
-                          setAddFindingFor(null);
+                        <Button variant="outline" onClick={() => { 
+                          setAddFindingFor(null); 
                           setNewFinding({
                             description: '',
                             finding_date: new Date().toISOString().split('T')[0],
@@ -3474,15 +3408,15 @@ export default function WorkOrderDetailPage() {
                   </p>
                 </div>
                 <div className="flex space-x-3 mt-6">
-                  <Button
-                    variant="primary"
+                  <Button 
+                    variant="primary" 
                     onClick={handleApproveCompletion}
                     className="flex-1"
                   >
                     ✅ Approve Completion
                   </Button>
-                  <Button
-                    variant="outline"
+                  <Button 
+                    variant="outline" 
                     onClick={() => setShowCompleteModal(false)}
                     className="flex-1"
                   >
@@ -3493,21 +3427,21 @@ export default function WorkOrderDetailPage() {
             ) : (
               <>
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Request Work Order Completion</h2>
-                <p className="text-gray-600 mb-4">Please select the completion date for this work order.</p>
-                <Input
-                  label="Completion Date"
-                  type="date"
-                  value={completionDate}
-                  onChange={(e) => setCompletionDate(e.target.value)}
-                />
-                <div className="flex space-x-3 mt-6">
-                  <Button onClick={handleCompleteWorkConfirm}>
+            <p className="text-gray-600 mb-4">Please select the completion date for this work order.</p>
+            <Input
+              label="Completion Date"
+              type="date"
+              value={completionDate}
+              onChange={(e) => setCompletionDate(e.target.value)}
+            />
+            <div className="flex space-x-3 mt-6">
+              <Button onClick={handleCompleteWorkConfirm}>
                     Submit Completion Request
-                  </Button>
-                  <Button variant="outline" onClick={() => setShowCompleteModal(false)}>
-                    Cancel
-                  </Button>
-                </div>
+              </Button>
+              <Button variant="outline" onClick={() => setShowCompleteModal(false)}>
+                Cancel
+              </Button>
+            </div>
               </>
             )}
           </div>
@@ -3548,7 +3482,7 @@ export default function WorkOrderDetailPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               {workOrder?.reference_document ? 'Update Reference Document' : 'Upload Reference Document'}
             </h2>
-
+            
             {workOrder?.reference_document && (
               <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                 <p className="text-yellow-800 text-sm">
@@ -3611,7 +3545,7 @@ export default function WorkOrderDetailPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
           <div className="bg-white p-8 rounded-lg shadow-xl max-w-2xl w-full mx-4">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Start Again - Add New Date</h2>
-
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Input
                 label="Action Date"
@@ -3650,8 +3584,8 @@ export default function WorkOrderDetailPage() {
                           const isChecked = e.target.checked;
                           setStartAgainData(prev => ({
                             ...prev,
-                            technician_ids: isChecked
-                              ? [...prev.technician_ids, t.id]
+                            technician_ids: isChecked 
+                              ? [...prev.technician_ids, t.id] 
                               : prev.technician_ids.filter(id => id !== t.id)
                           }));
                         }}

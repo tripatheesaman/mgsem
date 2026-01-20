@@ -6,6 +6,7 @@ import { Input } from '../../components/Input';
 import { Card } from '../../components/Card';
 import { useAuth } from '../../components/AuthProvider';
 import { useToast } from '../../components/ToastContext';
+import { apiClient } from '../../utils/api';
 
 export default function ProgressReportPage() {
   const { user } = useAuth();
@@ -31,38 +32,17 @@ export default function ProgressReportPage() {
     setIsGenerating(true);
 
     try {
-      // Get token for authentication
-      const token = localStorage.getItem('token');
-      if (!token) {
-        toast.showError('No authentication token found. Please log in again.');
+      const res = await apiClient.getBlob(`/reports/progress-report?fromDate=${fromDate}&toDate=${toDate}`);
+      
+      if (!res.ok || !res.blob) {
+        toast.showError('Error', 'Failed to generate report');
         return;
       }
 
-      // Use fetch directly for file downloads (apiClient expects JSON, not binary)
-      const response = await fetch(`/api/reports/progress-report?fromDate=${fromDate}&toDate=${toDate}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          toast.showError('Unauthorized. Please log in again.');
-          return;
-        }
-        if (response.status === 403) {
-          toast.showError('Access denied. Only administrators can generate progress reports.');
-          return;
-        }
-        throw new Error('Failed to generate report');
-      }
-
-      // Create blob and download
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const url = window.URL.createObjectURL(res.blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `ProgressReport_${fromDate}_to_${toDate}.xlsx`;
+      a.download = res.filename || `ProgressReport_${fromDate}_to_${toDate}.xlsx`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);

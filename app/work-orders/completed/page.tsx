@@ -95,23 +95,21 @@ export default function CompletedWorkOrdersPage() {
 
   const generateReport = async (workOrderId: number) => {
     try {
-      // Use fetch directly for blob response
-      const response = await fetch(`/api/reports/work-order-sheet?workOrderId=${workOrderId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const res = await apiClient.getBlob(`/reports/work-order-sheet?workOrderId=${workOrderId}`);
       
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `work-order-${workOrderId}-report.xlsx`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+      if (!res.ok || !res.blob) {
+        toast.showError('Error', 'Failed to generate report');
+        return;
+      }
+
+      const url = window.URL.createObjectURL(res.blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = res.filename || `work-order-${workOrderId}-report.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
         
         toast.showSuccess('Success', 'Report generated successfully');
       } else {
@@ -412,34 +410,25 @@ export default function CompletedWorkOrdersPage() {
                                     return;
                                   }
 
-                                  try {
-                                    const formData = new FormData();
-                                    formData.append('file', file);
+                                try {
+                                  const formData = new FormData();
+                                  formData.append('file', file);
 
-                                    const token = localStorage.getItem('token');
-                                    const headers: Record<string, string> = {};
-                                    if (token) {
-                                      headers.Authorization = `Bearer ${token}`;
-                                    }
+                                  const response = await apiClient.post(
+                                    `/work-orders/${workOrder.id}/signed-document`,
+                                    formData
+                                  );
 
-                                    const response = await fetch(`/api/work-orders/${workOrder.id}/signed-document`, {
-                                      method: 'POST',
-                                      headers,
-                                      body: formData
-                                    });
-
-                                    const result = await response.json();
-
-                                    if (result.success) {
-                                      fetchWorkOrders();
-                                      toast.showSuccess('Signed document replaced successfully');
-                                    } else {
-                                      toast.showError('Error', result.error || 'Failed to replace signed document');
-                                    }
-                                  } catch (error) {
-                                    console.error('Error replacing signed document:', error);
-                                    toast.showError('Error replacing signed document');
+                                  if (response.success) {
+                                    fetchWorkOrders();
+                                    toast.showSuccess('Signed document replaced successfully');
+                                  } else {
+                                    toast.showError('Error', response.error || 'Failed to replace signed document');
                                   }
+                                } catch (error) {
+                                  console.error('Error replacing signed document:', error);
+                                  toast.showError('Error replacing signed document');
+                                }
                                 }}
                               />
                               <span className="inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 px-3 py-1.5 text-sm border-2 border-[#08398F] text-[#08398F] hover:bg-[#08398F] hover:text-white focus:ring-[#08398F] w-full lg:w-auto justify-center">
@@ -497,25 +486,16 @@ export default function CompletedWorkOrdersPage() {
                                   const formData = new FormData();
                                   formData.append('file', file);
 
-                                  const token = localStorage.getItem('token');
-                                  const headers: Record<string, string> = {};
-                                  if (token) {
-                                    headers.Authorization = `Bearer ${token}`;
-                                  }
+                                  const response = await apiClient.post(
+                                    `/work-orders/${workOrder.id}/signed-document`,
+                                    formData
+                                  );
 
-                                  const response = await fetch(`/api/work-orders/${workOrder.id}/signed-document`, {
-                                    method: 'POST',
-                                    headers,
-                                    body: formData
-                                  });
-
-                                  const result = await response.json();
-
-                                  if (result.success) {
+                                  if (response.success) {
                                     fetchWorkOrders();
                                     toast.showSuccess('Signed document uploaded successfully');
                                   } else {
-                                    toast.showError('Error', result.error || 'Failed to upload signed document');
+                                    toast.showError('Error', response.error || 'Failed to upload signed document');
                                   }
                                 } catch (error) {
                                   console.error('Error uploading signed document:', error);

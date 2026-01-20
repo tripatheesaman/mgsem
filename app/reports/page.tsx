@@ -94,23 +94,21 @@ export default function ReportsPage() {
 
   const generateReport = async (workOrderId: number) => {
     try {
-      // Use fetch directly for blob response
-      const response = await fetch(`/api/reports/work-order-sheet?workOrderId=${workOrderId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const res = await apiClient.getBlob(`/reports/work-order-sheet?workOrderId=${workOrderId}`);
       
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `work-order-${workOrderId}-report.xlsx`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+      if (!res.ok || !res.blob) {
+        toast.showError('Error', 'Failed to generate report');
+        return;
+      }
+
+      const url = window.URL.createObjectURL(res.blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = res.filename || `work-order-${workOrderId}-report.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
         
         toast.showSuccess('Success', 'Report generated successfully');
       } else {
