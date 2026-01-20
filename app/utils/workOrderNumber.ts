@@ -2,6 +2,11 @@ import { PoolClient } from 'pg';
 import pool from '../lib/database';
 import { getWorkTypeCode } from './excel';
 
+function formatWorkOrderNumber(workTypeCode: string, counter: number): string {
+  const paddedNumber = String(counter).padStart(3, '0');
+  return `${workTypeCode}-${paddedNumber}`;
+}
+
 /**
  * Generate the next work order number for a given work type
  * Format: {WORKTYPECODE}-{NUMBER} (e.g., E-006)
@@ -16,14 +21,56 @@ export async function generateWorkOrderNumber(workType: string): Promise<string>
     const nextCounter = await getNextCounter(client, workTypeCode);
     await client.query('COMMIT');
 
-    const paddedNumber = String(nextCounter).padStart(3, '0');
-    return `${workTypeCode}-${paddedNumber}`;
+    return formatWorkOrderNumber(workTypeCode, nextCounter);
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
   } finally {
     client.release();
   }
+}
+
+/**
+ * Preview the next work order number for a given work type WITHOUT incrementing counters.
+ * Use this for UI display so multiple requests (e.g. React StrictMode) don't "consume" numbers.
+ */
+export async function previewNextWorkOrderNumber(workType: string): Promise<string> {
+  const client = await pool.connect();
+
+  try {
+    const workTypeCode = getWorkTypeCode(workType);
+
+    // Latest sequence from existing work orders (only well-formed codes)
+    const latestResult = await client.query(
+      `SELECT COALESCE(MAX(CAST(split_part(work_order_no, '-', 2) AS INTEGER)), 0) AS max_seq
+       FROM work_orders
+       WHERE work_order_no ~* ('^' || $1 || '-[0-9]+$')`,
+      [workTypeCode]
+    );
+    const latestFromOrders = Number(latestResult.rows[0]?.max_seq || 0);
+
+    // Current stored counter (if any)
+    const counterResult = await client.query(
+      `SELECT counter FROM work_type_counters WHERE work_type_code = $1`,
+      [workTypeCode]
+    );
+    const storedCounter = Number(counterResult.rows[0]?.counter || 0);
+
+    const nextCounter = Math.max(storedCounter, latestFromOrders) + 1;
+    return formatWorkOrderNumber(workTypeCode, nextCounter);
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Reserve (increment/persist) the next work order number inside an existing transaction.
+ * The caller MUST have started a transaction on the provided client.
+ */
+export async function reserveNextWorkOrderNumberInTx(client: PoolClient, workType: string): Promise<string> {
+  const workTypeCode = getWorkTypeCode(workType);
+  const nextCounter = await getNextCounter(client, workTypeCode);
+  return formatWorkOrderNumber(workTypeCode, nextCounter);
 }
 
 /**

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateWorkOrderNumber } from '@/app/utils/workOrderNumber';
+import { previewNextWorkOrderNumber } from '@/app/utils/workOrderNumber';
 import { ApiResponse } from '@/app/types';
 import { requireRoleAtLeast } from '@/app/api/middleware';
 
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const workOrderNumber = await generateWorkOrderNumber(work_type);
+    const workOrderNumber = await previewNextWorkOrderNumber(work_type);
 
     return NextResponse.json<ApiResponse<{ work_order_no: string }>>({
       success: true,
