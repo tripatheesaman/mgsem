@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Button } from '../../components/Button';
 import { useAuth } from '../../components/AuthProvider';
 import { Input } from '../../components/Input';
@@ -1763,14 +1764,14 @@ export default function WorkOrderDetailPage() {
                     height={300}
                     className="max-w-xs rounded border h-auto w-auto"
                   />
-              <a
+              <Link
                 href={`/${workOrder.reference_document}`}
                 target="_blank"
                 rel="noreferrer"
-                    className="text-[#08398F] underline text-sm"
+                className="text-[#08398F] underline text-sm"
               >
-                    View full size
-              </a>
+                View full size
+              </Link>
             </div>
               ) : workOrder.reference_document.match(/\.pdf$/i) ? (
                 // Display as PDF
@@ -1782,25 +1783,25 @@ export default function WorkOrderDetailPage() {
                       <p className="text-xs text-red-700">Click below to view</p>
           </div>
                   </div>
-                  <a
+                  <Link
                     href={`/${workOrder.reference_document}`}
                     target="_blank"
                     rel="noreferrer"
                     className="text-[#08398F] underline text-sm"
                   >
                     📄 View PDF Document
-                  </a>
+                  </Link>
                 </div>
               ) : (
                 // Display as other document link
-                <a
+                <Link
                   href={`/${workOrder.reference_document}`}
                   target="_blank"
                   rel="noreferrer"
                   className="text-[#08398F] underline"
                 >
                   📄 View document
-                </a>
+                </Link>
               )}
             </div>
           ) : (
