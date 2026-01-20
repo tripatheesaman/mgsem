@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { WorkOrder, WorkOrderFilters } from '@/app/types';
 import { apiClient } from '@/app/utils/api';
@@ -378,15 +379,15 @@ export default function CompletedWorkOrdersPage() {
                       <div className="space-y-2">
                         {workOrder.signed_document ? (
                           <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => window.open(`/${workOrder.signed_document}`, '_blank')}
-                              className="flex items-center space-x-2 w-full lg:w-auto justify-center"
+                            <Link
+                              href={`/${workOrder.signed_document}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center justify-center space-x-2 w-full lg:w-auto px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
                             >
                               <span>👁️</span>
                               <span>Preview PDF</span>
-                            </Button>
+                            </Link>
                             <label className="cursor-pointer inline-block w-full lg:w-auto">
                               <input
                                 type="file"

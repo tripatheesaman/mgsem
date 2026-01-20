@@ -158,12 +158,7 @@ export default function CreateWorkOrderPage() {
       }
 
       const fileTypeError = validateFileType(formData.reference_document, [
-        'image/jpeg',
-        'image/png',
-        'image/gif',
         'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
       ]);
       if (fileTypeError) {
         toast.showError('Validation Error', fileTypeError.message);
