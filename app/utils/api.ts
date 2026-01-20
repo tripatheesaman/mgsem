@@ -43,9 +43,12 @@ class ApiClient {
       const text = await response.text();
 
       if (!text || !text.trim()) {
+        if (response.ok) {
+          return { success: true } as ApiResponse<T>;
+        }
         return {
           success: false,
-          error: `Empty response: (${response.status})`,
+          error: `Empty response (${response.status})`,
         };
       }
 
@@ -74,17 +77,27 @@ class ApiClient {
   }
 
   post<T>(endpoint: string, data?: unknown) {
-    return this.request<T>(endpoint, {
-      method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
-    });
+    const isFormData = data instanceof FormData;
+    return this.request<T>(
+      endpoint,
+      {
+        method: 'POST',
+        body: isFormData ? data : (data ? JSON.stringify(data) : undefined),
+      },
+      isFormData
+    );
   }
 
   put<T>(endpoint: string, data?: unknown) {
-    return this.request<T>(endpoint, {
-      method: 'PUT',
-      body: data ? JSON.stringify(data) : undefined,
-    });
+    const isFormData = data instanceof FormData;
+    return this.request<T>(
+      endpoint,
+      {
+        method: 'PUT',
+        body: isFormData ? data : (data ? JSON.stringify(data) : undefined),
+      },
+      isFormData
+    );
   }
 
   delete<T>(endpoint: string) {
