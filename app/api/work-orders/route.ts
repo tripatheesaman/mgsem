@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
       km_hrs,
       requested_by,
       work_type,
+      work_type_code,
       job_allocation_time,
       description,
       reference_document,
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
       // Auto-generate work order number if not provided
       let finalWorkOrderNo = work_order_no;
       if (!finalWorkOrderNo || finalWorkOrderNo.trim() === '') {
-        finalWorkOrderNo = await generateWorkOrderNumber(work_type);
+        finalWorkOrderNo = await generateWorkOrderNumber(work_type, work_type_code);
       } else {
         // Check if manually provided work order number already exists
         const existingOrder = await client.query(

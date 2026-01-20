@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { work_type } = body;
+    const { work_type, work_type_code } = body;
 
     if (!work_type || typeof work_type !== 'string') {
       return NextResponse.json<ApiResponse<null>>({
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const workOrderNumber = await generateWorkOrderNumber(work_type);
+    const workOrderNumber = await generateWorkOrderNumber(work_type, work_type_code);
 
     return NextResponse.json<ApiResponse<{ work_order_no: string }>>({
       success: true,
