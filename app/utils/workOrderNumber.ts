@@ -6,11 +6,11 @@ import { getWorkTypeCode } from './excel';
  * Generate the next work order number for a given work type
  * Format: {WORKTYPECODE}-{NUMBER} (e.g., E-006)
  */
-export async function generateWorkOrderNumber(workType: string, workTypeCodeOverride?: string): Promise<string> {
+export async function generateWorkOrderNumber(workType: string): Promise<string> {
   const client = await pool.connect();
 
   try {
-    const workTypeCode = workTypeCodeOverride?.trim() || getWorkTypeCode(workType);
+    const workTypeCode = getWorkTypeCode(workType);
 
     await client.query('BEGIN');
     const nextCounter = await getNextCounter(client, workTypeCode);
