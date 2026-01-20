@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create directory
-    const uploadDir = join(process.cwd(), 'public', 'uploads', subDir);
+    const uploadDir = join('/data/uploads', subDir);
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true });
     }

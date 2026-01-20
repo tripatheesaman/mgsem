@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
       // Generate unique filename
       const timestamp = Date.now();
       const filename = `ReportSummary_${timestamp}.xlsx`;
-      const outputPath = path.join(process.cwd(), 'public', 'uploads', filename);
+      const outputPath = path.join('/data/uploads', filename);
 
       // Ensure uploads directory exists
       const uploadsDir = path.dirname(outputPath);

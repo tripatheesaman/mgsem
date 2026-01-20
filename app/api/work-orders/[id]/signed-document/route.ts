@@ -80,7 +80,7 @@ export async function POST(
 
       // Delete old document if exists
       if (workOrder.signed_document) {
-        const oldFilePath = join(process.cwd(), 'public', workOrder.signed_document);
+        const oldFilePath = join('/data', workOrder.signed_document);
         if (existsSync(oldFilePath)) {
           try {
             await unlink(oldFilePath);
@@ -99,7 +99,7 @@ export async function POST(
       const subDir = workOrder.work_order_no || 'misc';
 
       // Create directory
-      const uploadDir = join(process.cwd(), 'public', 'uploads', subDir);
+      const uploadDir = join('/data/uploads', subDir);
       if (!existsSync(uploadDir)) {
         await mkdir(uploadDir, { recursive: true });
       }
@@ -181,7 +181,7 @@ export async function DELETE(
       }
 
       // Delete file from filesystem
-      const filePath = join(process.cwd(), 'public', workOrder.signed_document);
+      const filePath = join('/data', workOrder.signed_document);
       if (existsSync(filePath)) {
         try {
           await unlink(filePath);

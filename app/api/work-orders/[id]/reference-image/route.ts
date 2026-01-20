@@ -54,7 +54,7 @@ export async function PUT(
 
       // Delete old file if it exists
       if (currentReference) {
-        const oldFilePath = join(process.cwd(), 'public', currentReference);
+        const oldFilePath = join('/data', currentReference);
         if (existsSync(oldFilePath)) {
           try {
             await unlink(oldFilePath);
@@ -68,7 +68,7 @@ export async function PUT(
       // Generate unique filename
       const fileExtension = file.name.split('.').pop();
       const fileName = `work-order-${workOrderId}-ref-${Date.now()}.${fileExtension}`;
-      const uploadPath = join(process.cwd(), 'public', 'uploads', 'references');
+      const uploadPath = join('/data/uploads', 'references');
       const filePath = join(uploadPath, fileName);
       const publicPath = `uploads/references/${fileName}`;
 
@@ -147,7 +147,7 @@ export async function DELETE(
     }
 
     // Delete file from filesystem
-    const filePath = join(process.cwd(), 'public', currentReference);
+    const filePath = join('/data', currentReference);
     if (existsSync(filePath)) {
       try {
         await unlink(filePath);
