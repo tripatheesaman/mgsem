@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -16,7 +16,12 @@
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f"
+    "docker:logs": "docker-compose logs -f",
+    "docker:dev:build": "docker-compose --env-file .env.development -f docker-compose-dev.yml build",
+    "docker:dev:up": "docker-compose --env-file .env.development -f docker-compose-dev.yml up",
+    "docker:dev:down": "docker-compose --env-file .env.development -f docker-compose-dev.yml down",
+    "docker:dev:logs": "docker-compose --env-file .env.development -f docker-compose-dev.yml logs -f",
+    "docker:dev:restart": "docker-compose --env-file .env.development -f docker-compose-dev.yml restart"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.0.0",
