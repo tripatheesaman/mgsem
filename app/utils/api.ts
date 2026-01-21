@@ -1,7 +1,7 @@
 import { ApiResponse } from '../types';
 
-
-const BASE_PATH = "/mgsem";
+// Use basePath in production, none in development
+const BASE_PATH = process.env.NODE_ENV === 'production' ? "/mgsem" : "";
 const API_BASE = `${BASE_PATH}/api`;
 
 class ApiClient {

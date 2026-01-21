@@ -1,0 +1,20 @@
+FROM node:18.20-alpine
+
+WORKDIR /app
+
+# Required libraries (matching production)
+RUN apk add --no-cache libc6-compat netcat-openbsd
+
+# Install all dependencies (including devDependencies)
+COPY package*.json ./
+RUN npm install
+
+# Set development environment
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+
+EXPOSE 3000
+
+# Run Next.js in dev mode (NO build step - source mounted from host)
+CMD ["npm", "run", "dev"]
+
