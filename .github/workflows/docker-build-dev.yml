@@ -3,7 +3,7 @@ name: Build & Push MGSEM Develop Image
 on:
   push:
     branches:
-      - develop
+      - dev
 
 jobs:
   build:
