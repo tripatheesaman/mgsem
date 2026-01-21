@@ -1,4 +1,4 @@
-name: Build & Push MGSEM Develop Image
+name: Build & Push MGSEM Develoment Image
 
 on:
   push:
@@ -30,4 +30,4 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            tripatheesaman/mgsem:develop
+            tripatheesaman/mgsem:dev
