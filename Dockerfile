@@ -1,5 +1,5 @@
 # Stage 1: Dependencies
-FROM node:18-alpine AS deps
+FROM node:18.20-alpine AS deps
 WORKDIR /app
 
 # Required libraries
@@ -10,20 +10,20 @@ COPY package.json package-lock.json* tsconfig.json ./
 RUN npm ci --only=production
 
 # Stage 2: Builder
-FROM node:18-alpine AS builder
+FROM node:18.20-alpine AS builder
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Disable telemetry ( kunni k ho  yo)
+# Disable telemetry ( kunni k ho  yo stackoverflow jindabaad)
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Build 
 RUN npm run build
 
 # Stage 3: Runner
-FROM node:18-alpine AS runner
+FROM node:18.20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production

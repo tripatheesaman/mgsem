@@ -1,15 +1,13 @@
-name: Build & Push MGSEM Image
+name: Build & Push MGSEM Develop Image
 
 on:
   push:
     branches:
-      - main
-    tags:
-      - 'v*.*.*'
+      - dev
 
 jobs:
   build:
-    name: Build & Push Production Image
+    name: Build & Push Development Image
     runs-on: ubuntu-latest
 
     steps:
@@ -25,15 +23,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract version
-        id: vars
-        run: |
-          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          else
-            echo "VERSION=latest" >> $GITHUB_ENV
-          fi
-
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
@@ -41,5 +30,4 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            tripatheesaman/mgsem:${{ env.VERSION }}
-            tripatheesaman/mgsem:latest
+            tripatheesaman/mgsem:develop
