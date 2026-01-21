@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Build & Push Production Image
+    name: Build And Push Production Image
     runs-on: ubuntu-latest
 
     steps:
